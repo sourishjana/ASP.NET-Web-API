@@ -1,0 +1,1188 @@
+front end applications cant talk to db directly so we need a mediator API
+
+avoid businees logic dulication for web api, andriod, etc.
+i.e extended application functionality
+
+abstraction
+
+security
+
+
+What is web api?
+
+API stands for application programming interface
+web api is a concept not a technology that works on HTTP protocol and it is used to extend
+the functionality of an application.
+
+If we want to expose our services publicly for everyone we can use web api
+
+In .net application we have 2 frameowrks to create the web api
+1) asp.net web api 2 (using .net framework)
+2) asp.net core (using .net core)
+
+
+What is REST?
+
+Representational state transfer
+REST is a combination of couple of principles that must be followed by the web api
+1) URL structure
+2) Http verbs
+3) status code
+4) stateless
+
+
+what is HTTP:
+1) hyper text transfer protocol
+2) used of communication between client and web server
+
+		request
+browser 	------------------> web server
+(postman)	<------------------
+		response
+
+
+Http is an application layer protocol for distributed(client and server are dristibuted) information system
+it is the foundation of data communication for the world wide web, where hypertext documents include 
+hyper links to other resources that the user can easily access , for example by a mouse click
+or tapping the screen in a web browser.
+
+
+HTTP request and its components:
+Each request must have:
+1) URL
+2) Verb (Method)
+3) Headers
+4) body
+5) data
+
+http response must have:
+1) status code
+2) response header
+3) data
+
+
+HTTP verbs:
+1) GET:
+	get method is used to retrieve data, e.g get book, search a book
+2) POST:
+	used to make a new entry in the db, e.g add a new book
+3) PUT: 
+	used to update all the properties of current resources in db, e.g update props of a book
+4) PATCH:
+	similar to put but it is used to update partial props of current resource in the db, update few props of an existing book
+	lets suppose we have 4 cols and out of which we want to update only 1 col
+5) DELETE:
+	used to delete a resource from the db, e.g delete existing book from db
+
+
+Status codes:
+1) issued from the server and gives information about the resposes
+HTTP response are divided into 5 categories:
+1XX - Informational response 
+2XX - successful
+3XX - Redirection
+4XX - client error
+5XX - server error
+
+frequently used status code:
+200 OK
+201 new resource created
+204 no content(purpose of the request is successful but it is not returning any data)
+301 moved permanently
+302 moved temporarily
+400 bad request
+401 un-authorized
+404 not found
+405 method not allowed
+500 internal server error
+503 server unavailable( down for maintenance)
+
+
+EXAPMLE:
+goto the google.com and inspect and goto network tab and then XHR where we can see all the request and response
+
+
+How to make a web api project:
+1) select aps.net core web api
+
+when we run the application we get a swagger UI:
+It is also basically a client requesting tool, it is used to test our APIs
+
+
+
+Web API project structure:
+
+Dependencies: all the packages and dependencies installed
+Properties: LaunchSettings.json : it has some setting which helps to run in the development environment
+Controllers: 
+appsettings.json : all the settings that are available for your project 
+program.cs : entry point of this project
+StartUp.cs : 2 imp methods
+	ConfigureServices
+	Configure(app,env) -> env used for making middleware of the application
+	Just read about these methods
+Models : you need to create the folder and keep all models here
+
+
+You can also customise your project by keeping all the models in a diff class library 
+
+
+
+csproj (Project file) in ASP.NET Core Web API:
+
+double click on the project folder the project_name.csproj will open and 
+it will contain the version of the project and the packages installed 
+
+
+Console app to web api project:
+
+Each dotnet core app is by default a console app
+we need to add some services and make some changes to convert this console app into a web api
+
+
+------------------------------------------------------------------------------------------
+
+
+Http request pipeline:
+
+browser ----------------> server (3 controllers)
+	<----------------
+
+actually as we know that the request from the browser hits the server controller
+but before hitting the controller the request has to pass through a pipeline
+
+the request can have to pass through multiple middlewares
+
+suppose there are 3 middlewares:
+
+client		middleware-1		middleware-2		middleware-3
+
+	------>	// some code
+		next()		----->	// some code
+					next()		---->	// some code
+								// if there is no next() method
+							<----	// it will send a response
+					// some code
+					// for response
+				<-----
+		// some code
+		// for response
+	<------
+
+
+
+
+
+Middleware :
+1) It is a piece of code that is used in the HTTP request pipeline.
+2) An ASP.NET Core Web application can have n number of middleware.
+3) Order of middleware matters a lot in the execution.
+
+Examples of middleware:
+Routing
+Authentication : this is a middleware used to check the user hitting a route is valid -> if valid call next() else response err
+Add Exception Page: In order to handle global exceptions we need middlewares
+
+All the middlewares are present in this method in StartUp.cs file
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+
+
+Run(),Use(),Next(),Map() method in middleware:
+
+Run() method is used to complete the middleware execution.
+Use() method is used to insert a new middleware in the pipeline 
+	If u want to add your own custom middleware and call it 
+Next() method is used to pass the execution to the next middleware
+Map() method is used to map the middleware to a specific URL
+
+
+Run():
+
+	public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+
+	    // Here we write 2 run methods -----------------------------
+            app.Run(async context =>
+            {
+                await context.Response.WriteAsync("Hello from Run");
+            });
+
+            app.Run(async context =>
+            {
+                await context.Response.WriteAsync("Hello from Run 2");
+            });
+
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "My_API_Project v1"));
+            }
+
+            app.UseHttpsRedirection();
+
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
+        }
+
+When we run the application in the https://localhost:44309/ route we get only "Hello from Run"
+But we cant see "Hello from Run 2" as Run() is used to complete the middleware execution.
+so only first Run() method will be executed.
+
+
+Use():
+
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            app.Use(async (context,next) => // creating a new middleware-1
+            {
+                await context.Response.WriteAsync("Hello from Use-1\n");
+                await next(); // passing to next middleware
+                await context.Response.WriteAsync("Hello from Use-1 after getting response from next\n");
+            });
+            app.Use(async (context, next) => // creating a new middleware-2
+            {
+                await context.Response.WriteAsync("Hello from Use-2\n");
+                await next(); // passing to next middleware
+                await context.Response.WriteAsync("Hello from Use-2 after getting response from next\n");
+            });
+            app.Use(async (context, next) => // creating a new middleware-3
+            {
+                await context.Response.WriteAsync("Request complete\n");
+            });
+
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "My_API_Project v1"));
+            }
+
+            app.UseHttpsRedirection();
+
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
+        }
+
+
+o/p:
+Hello from Use-1
+Hello from Use-2
+Request complete
+Hello from Use-2 after getting response from next
+Hello from Use-1 after getting response from next
+
+Creating a new middleware and passing to next middleware 
+
+Map():
+
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            app.Use(async (context, next) => // creating a new middleware
+            {
+                await context.Response.WriteAsync("Hello from Use-1\n");
+                await next(); // passing to next middleware
+                await context.Response.WriteAsync("Hello from Use-1 after getting response from next\n");
+            });
+
+            app.Map("/sourish",CustomCode);
+
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "My_API_Project v1"));
+            }
+
+            app.UseHttpsRedirection();
+
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
+        }
+
+
+        private void CustomCode(IApplicationBuilder app)
+        {
+            app.Use(async (context, next) => // creating a new middleware
+            {
+                await context.Response.WriteAsync("Hello from Sourish\n");
+            });
+        }
+
+o/p:
+Hello from Use-1
+Hello from Sourish
+Hello from Use-1 after getting response from next
+
+
+This will produce this o/p when we hit the url https://localhost:44309/sourish
+
+Map() just maps a middleware in a particular URL
+
+
+Create custom Middleware:----------------------------------------------------------------------
+
+first create a custom class in the main dir:
+CustomMiddleware1.cs:
+using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
+
+namespace My_API_Project
+{
+    public class CustomMiddleware1 : IMiddleware
+    {
+        public async Task InvokeAsync(HttpContext context, RequestDelegate next)
+        {
+            await context.Response.WriteAsync("Hello from CustomMiddleware1\n");
+            await next(context); // passing to next middleware
+            await context.Response.WriteAsync("Hello from CustomMiddleware1 after getting response from next\n");
+        }
+    }
+}
+
+
+StartUp.cs:
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace My_API_Project
+{
+    public class Startup
+    {
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+
+            services.AddControllers();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My_API_Project", Version = "v1" });
+            });
+
+            services.AddTransient<CustomMiddleware1>(); // add this line----------------------------------------------
+        }
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            // Map() Method
+            app.Use(async (context, next) => // creating a new middleware
+            {
+                await context.Response.WriteAsync("Hello from Use-1\n");
+                await next(); // passing to next middleware
+                await context.Response.WriteAsync("Hello from Use-1 after getting response from next\n");
+            });
+
+            app.UseMiddleware<CustomMiddleware1>(); // add this line -------------------------------------------------------
+
+            app.Map("/sourish",CustomCode);
+
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "My_API_Project v1"));
+            }
+
+            app.UseHttpsRedirection();
+
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
+        }
+
+
+        private void CustomCode(IApplicationBuilder app)
+        {
+            app.Use(async (context, next) => // creating a new middleware
+            {
+                await context.Response.WriteAsync("Hello from Sourish\n");
+            });
+        }
+    }
+}
+
+
+op:
+
+https://localhost:44309/sourish
+
+Hello from Use-1
+Hello from CustomMiddleware1
+Hello from Sourish
+Hello from CustomMiddleware1 after getting response from next
+Hello from Use-1 after getting response from next
+
+
+
+Inside the startup.cs we have Configure method where we have some default middlewares getting called:
+
+	app.UseHttpsRedirection();
+
+            app.UseRouting();
+
+            app.UseAuthorization(); 
+
+all these middlewares call next() method behind the scenes. Thats why theay are called one after another
+
+
+
+
+----------------------------------------------------------------------------------------------------
+
+
+
+What is Routing ?
+
+Routing is the process of mapping the incoming http request(URL) to a particular resource(action method)
+
+1) When we run an application then this application will create a route table 
+where there will be a mapping between the url and the resource
+Whenever any request comes from the client application first searches that exact url in the route table
+if found then it allocates the resource for that perticular URL
+
+2) we can access any resource using a unique URL
+3) a resource can have multiple unique URL
+4) Multiple resource cant have same url
+
+
+
+How to enable routing?-------------------------------------------
+
+In ASP.nET application we can enable routing through middleware 
+We need to insert the following 2 middlewares in the http pipeline:
+1) UseROuting()
+2) UseEndPoint()
+ 
+
+
+In the configure method in StartUp.cs:
+
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers(); // is used to map the routes (http requests) to our controllers
+            });
+
+
+2 types of routing:
+1) conventional routing
+2) Attribute based routing
+
+
+In order to create routing we need to define a controller:
+new controller -> Common/API -> Api Controller - Empty
+
+
+using Microsoft.AspNetCore.Mvc;
+
+namespace My_API_Project.Controllers
+{
+    [ApiController]
+    public class ValuesController : ControllerBase
+    {
+        // setting up first routes
+        [HttpGet]
+        [Route("api/get-all")]
+        public string getAll()
+        {
+            return "hello from getAll";
+        }
+
+        [HttpGet]
+        [Route("get-all-authors")]
+        public string getAllAuthors()
+        {
+            return "hello from getAllAuthors";
+        }
+
+        // working with variables in routing
+        [HttpGet]
+        [Route("book/{id}")]
+        public string getById(int id)
+        {
+            return "Hello " + id;
+        }
+
+        [HttpGet]
+        [Route("book/{id}/author/{authorId}")]
+        public string getAuthorById(int id,int authorId)
+        {
+            return "AuthorId: " + authorId + " Id: " + id;
+        }
+
+        // working with query string in routing
+        [HttpGet]
+        [Route("search")]
+        public string search(int? id, int? authorId,string? name,int? rating,int? price)
+        {
+            return "Hello from Search ";
+        }
+
+
+        // multiple URLs fro single resource
+        [HttpGet]
+        [Route("api/multi")]
+        [Route("multi")]
+        [Route("api-multi")]
+        public string multiUrl()
+        {
+            return "hello from getAll";
+        }
+
+        // same URL for multiple resouces is not possible
+
+
+        // Token replacement in routing
+        [HttpGet]
+        [Route("[controller]/[action]")]
+        public string token()
+        {
+            return "Token";
+        }
+    }
+}
+
+
+Setting base route at controller level:---------------------------------------
+
+using Microsoft.AspNetCore.Mvc;
+
+namespace My_API_Project.Controllers
+{
+    [ApiController]
+    [Route("[controller]/[action]")]
+    public class ValuesController : ControllerBase
+    {
+        [HttpGet]
+        [Route("~/api/get-all")] // if we donot want to use the default base url
+        public string getAll()
+        {
+            return "hello from getAll";
+        }
+
+        [HttpGet]
+        public string getAllAuthors()
+        {
+            return "hello from getAllAuthors";
+        }
+
+        // working with variables in routing
+        [HttpGet]
+        [Route("{id}")]
+        public string getById(int id)
+        {
+            return "Hello " + id;
+        }
+
+        [HttpGet]
+        [Route("{id}/author/{authorId}")]
+        public string getAuthorById(int id,int authorId)
+        {
+            return "AuthorId: " + authorId + " Id: " + id;
+        }
+
+        // working with query string in routing
+        [HttpGet]
+        public string search(int? id, int? authorId,string? name,int? rating,int? price)
+        {
+            return "Hello from Search ";
+        }
+
+
+        // multiple URLs fro single resource
+        [HttpGet]
+        public string multiUrl()
+        {
+            return "hello from getAll";
+        }
+
+        // same URL for multiple resouces is not possible
+
+
+        // Token replacement in routing
+        [HttpGet]
+        
+        public string token()
+        {
+            return "Token";
+        }
+    }
+}
+
+
+Route Contraints:----------------------------------------------------------------------
+
+Type: int, bool, datetime, double, float, etc
+Min: min()
+Max: max()
+MinLength: minlength(10)
+MaxLength: maxlength(20)
+Length: length(15)
+Range: range(10,15)
+Required: required
+Regex: regex(expression)
+Alpha:
+
+using Microsoft.AspNetCore.Mvc;
+
+namespace My_API_Project.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class BooksController : ControllerBase
+    {
+        [HttpGet]
+        [Route("{id:int:min(10):max(100)}")]
+        public string GetById(int id)
+        {
+            return "Hello int " + id;
+        }
+
+        [HttpGet]
+        [Route("api/{idStr:minlength(5)}")] // by default is taken as string
+        public string GetByIdString(string idStr)
+        {
+            return "Hello string " + idStr;
+        }
+    }
+}
+
+
+Regex:
+        [HttpGet]
+        [Route("api/{idStr:regex(a(b|c))}")] // by default is taken as string
+        public string GetByIdString(string idStr)
+        {
+            return "Hello string " + idStr;
+        }
+
+
+Action Method return types:------------------------------------------------------------------
+1) Specific type
+2) IActionResult
+3) ActionResult<T>
+
+
+Specific Type:-------------------------------
+
+using Microsoft.AspNetCore.Mvc;
+using My_API_Project.Models;
+using System.Collections.Generic;
+
+namespace My_API_Project.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class EmployeeController : ControllerBase
+    {
+        [HttpGet]
+        public IList<Employee> getAllEmployees()
+        {
+            return new List<Employee>()
+            {
+                new Employee(){Id=1,Name="EMployee1"},
+                new Employee(){Id=2,Name="EMployee2"}
+            };
+        }
+    }
+}
+
+
+IActionResult:-----------------------
+
+The IActionResult is an interface and it is used to return [multiple types of data]. 
+For example, if you want to return [NotFound, OK, Redirect, etc]. data from your action method then 
+you need to use IActionResult as the return type from your action method.
+
+        [HttpGet]
+        [Route("{id}")]
+        public IActionResult getEmployees(int id)
+        {
+            if (id == 0)
+            {
+                return NotFound();
+            }
+            return Ok(new List<Employee>()
+            {
+                new Employee(){Id=1,Name="EMployee1"},
+                new Employee(){Id=2,Name="EMployee2"}
+            });
+        }
+
+
+ActionResult<T> :------------------------
+
+It is combination of specific type and IACtionResult
+
+        [HttpGet]
+        [Route("{id}")]
+        public ActionResult<IList<Employee>> getEmployees(int id)
+        {
+            if (id == 0)
+            {
+                return NotFound();
+            }
+            return Ok(new List<Employee>()
+            {
+                new Employee(){Id=1,Name="EMployee1"},
+                new Employee(){Id=2,Name="EMployee2"}
+            });
+        }
+
+
+Status Code:-------------------------
+
+status code 200 Ok is returned by Ok() method which is present in "ControllerBase" class
+status code 202 Accepted is returned by Accepted() method
+status code 400 Bad request is returned by BadRequest()
+status code 201 Created is returned by Created()
+status code 302 Redirect is returned by LocalRedirect("~/api/animals") will get redirected after returning to another route
+redirect to some url is done by Redirect("url") 
+
+NOTE: diff between Redirect() and LocalRedirect() is Redirect and redirect to any external links
+
+RedirectToAction(action,controller) 
+
+Empty result is returned by NoContent() 
+status code 404 Not Found is returned by NotFound()
+status code 401 unauthorized is returned by Unauthorized()
+
+
+Model Binder:---------------------------------------------------------------------------------
+
+In order to convert the incoming data type from client to the dotnet type is possible because of Model Binder
+
+Client send data can be in many froms:
+1) URL -> 
+	Route
+	Query string
+2) Header
+3) Body
+4) Form-Data
+
+
+data in http request -> Model Binder -> Parameters and properties
+
+Process of binding the http request data to the parameters of application controllers or Properties
+is known as model binding
+
+
+BindProperty:-----------------------------------------------------------------------
+
+1) BindProperty is an attribute and it is used to map the incoming form-data to public properties
+2) BindProprty is applied on each target property individually
+
+using Microsoft.AspNetCore.Mvc;
+using My_API_Project.Models;
+using System.Collections.Generic;
+
+namespace My_API_Project.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class EmployeeController : ControllerBase
+    {
+        [BindProperty]
+        public Employee Employee { get; set; }
+
+        [HttpPost]
+        public IActionResult AddCountry()
+        {
+            return Ok(this.Employee);
+        }
+    }
+}
+
+BindProperties:------------------------------------------------------------
+
+1) BindProperties is an attribute and it is used to map the incoming form-data to public properties
+2) BindProperties work on simple and complex data objects
+3) donot work for http get request
+4) applied on controller level
+
+using Microsoft.AspNetCore.Mvc;
+using My_API_Project.Models;
+using System.Collections.Generic;
+
+namespace My_API_Project.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    [BindProperties]
+    public class EmployeeController : ControllerBase
+    {
+        public Employee Employee { get; set; }
+
+        [HttpPost]
+        public IActionResult AddCountry()
+        {
+            return Ok(this.Employee);
+        }
+    }
+}
+
+
+default way of databinding:-----------------------------------------------------------------------
+
+1) simple parameters (int,float,string) will get bind with the URL data
+2) the complex type will get bind with the body of the request
+
+
+https://localhost:44309/api/Employee?name=sourish&id=2
+
+using Microsoft.AspNetCore.Mvc;
+using My_API_Project.Models;
+using System.Collections.Generic;
+
+namespace My_API_Project.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class EmployeeController : ControllerBase
+    {
+        [HttpGet]
+        public IActionResult AddEmployee(string name,int id) // simple type are fetched from url
+        {
+            return Ok("Name "+name+" id "+id);
+        }
+
+        [HttpPost]
+        public IActionResult AddEmployee(Employee employee) // complex types are fetched from form body
+        {
+            return Ok("Name " + employee.Name + " id " + employee.Id);
+        }
+    }
+}
+
+
+FromQuery:---------------------------------------------------------------
+
+the FromQuery attr is used to bind the data available in the query string
+
+https://localhost:44309/api/Employee?Id=34&Name=sourish
+
+using Microsoft.AspNetCore.Mvc;
+using My_API_Project.Models;
+using System.Collections.Generic;
+
+namespace My_API_Project.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class EmployeeController : ControllerBase
+    {
+        [HttpPost]
+        public IActionResult AddEmployee([FromQuery]Employee employee)
+        {
+            return Ok("Name " + employee.Name + " id " + employee.Id);
+        }
+    }
+}
+
+
+FromRoute:--------------------------------------------------------------------
+
+The FromRoute attr is used to bind the data available in route url
+
+https://localhost:44309/api/Employee/Sourish/34
+
+using Microsoft.AspNetCore.Mvc;
+using My_API_Project.Models;
+using System.Collections.Generic;
+
+namespace My_API_Project.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class EmployeeController : ControllerBase
+    {
+        [HttpPost]
+        [Route("{Name}/{Id}")]
+        public IActionResult AddEmployee([FromRoute]Employee employee)
+        {
+            return Ok("Name " + employee.Name + " id " + employee.Id);
+        }
+    }
+}
+ 
+FromBody:------------------------------------------------------------------
+
+https://localhost:44309/api/Employee
+
+body:
+{
+  "id": 1,
+  "name": "sourish"
+}
+
+using Microsoft.AspNetCore.Mvc;
+using My_API_Project.Models;
+using System.Collections.Generic;
+
+namespace My_API_Project.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class EmployeeController : ControllerBase
+    {
+        [HttpPost]
+        public IActionResult AddEmployee([FromBody]Employee employee)
+        {
+            return Ok("Name " + employee.Name + " id " + employee.Id);
+        }
+    }
+}
+
+FromForm:------------------------------------------------
+
+Binds data from the Form-data 
+
+FromHeader:-----------------------------------------------
+
+We can force our action to read data from the header of the client request:
+
+        [HttpPost]
+        public IActionResult AddEmployee([FromBody]Employee employee,[FromHeader]string developer)
+        {
+            return Ok("Name " + employee.Name + " id " + employee.Id+" developer "+developer);
+        }
+
+
+NOTE: we can also use custom model binder
+
+
+Dependency Injection:----------------------------------------------------------------
+
+If we use repository pattern:
+
+Controller ----------------> Repository
+
+The actions of the controllers will call the methods of the Repository and get the logic done.
+Now if we initialize the object of Repository then call the methods of Repository then there is a problem
+1) It will be tight coupling between controller and repository
+2) And also there will be problem of unit testing
+3) later if we use another repository then we need to change the controller which is a bad practice
+
+
+Controller ----------> IRepository --> Repository
+
+Here controller will get the Irepository type by using DI and get the methods of Repository
+
+
+
+DI:
+1) The main concept of DI is to implement Inversion of Control(IOC)
+2) IOC means to have loose coupling in the code
+3) Unit testing
+
+
+How to configure DI:
+1) asp.net provides build-in support for DI
+2) Dependency is registered in containers, and container in asp.net core is IServiceProvider
+3) Services are registered in StartUp.cs ConfigureServices method
+
+
+Lifetime of Services in DI:
+
+1) Singleton
+2) Scoped 
+3) Transient
+
+
+Singleton service DI:------------------------------------------------------------------------------------------
+
+1) It can be registered using AddSingleton<> method.
+2) There will be only one instance of the singleton service throughout the application
+
+
+IEmployeeRepository:
+
+using My_API_Project.Models;
+using System.Collections.Generic;
+
+namespace My_API_Project.Repository
+{
+    public interface IEmployeeRepository
+    {
+        int AddEmployee(Employee employee);
+        IList<Employee> GetAllEMployees();
+    }
+}
+
+EmployeeRepository:
+
+using System.Collections.Generic;
+using My_API_Project.Models;
+
+namespace My_API_Project.Repository
+{
+    public class EmployeeRepository : IEmployeeRepository
+    {
+        private List<Employee> employees = new List<Employee>();
+        public int AddEmployee(Employee employee)
+        {
+            employee.Id = employees.Count + 1;
+            employees.Add(employee);
+            return employee.Id;
+        }
+        public IList<Employee> GetAllEMployees()
+        {
+            return employees;
+        }
+    }
+}
+
+EmployeeController:
+
+using Microsoft.AspNetCore.Mvc;
+using My_API_Project.Models;
+using My_API_Project.Repository;
+using System.Collections.Generic;
+
+namespace My_API_Project.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class EmployeeController : ControllerBase
+    {
+        // Singleton service ------------------------------------------------------
+
+        private readonly IEmployeeRepository _employeeRepository;
+
+        public EmployeeController(IEmployeeRepository employeeRepository) // DI------------------
+        {
+            _employeeRepository = employeeRepository;
+        }
+
+        [HttpPost]
+        public IActionResult AddEmployee([FromBody] Employee employee)
+        {
+            _employeeRepository.AddEmployee(employee);
+            var employees = _employeeRepository.GetAllEMployees();
+            return Ok(employees);
+        }
+    }
+}
+
+
+StartUp.cs:
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+
+            services.AddControllers();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My_API_Project", Version = "v1" });
+            });
+
+            services.AddTransient<CustomMiddleware1>();
+
+            // singleton service DI:--------------------------
+            services.AddSingleton<IEmployeeRepository, EmployeeRepository>();
+
+        }
+
+
+
+Scoped Service DI:-------------------------------------------------------------------------------
+
+1) Can be registered using AddScoped<> method
+2) A new instance of the service will be created for each new Http request
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+
+            services.AddControllers();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My_API_Project", Version = "v1" });
+            });
+
+            services.AddTransient<CustomMiddleware1>();
+
+            // Scoped service DI:-------------------------
+            services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+        }
+
+
+Transient Service DI:------------------------------------------------------------
+
+1) used by using AddTransient<>
+2) A new instance of service will be created everytime it is requested
+3) Lets say controller A is using a Transient service S, 3 times in the same http request,
+	then there will be 3 seperate instances of this service S 
+	And no data is shared in between those service instances
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

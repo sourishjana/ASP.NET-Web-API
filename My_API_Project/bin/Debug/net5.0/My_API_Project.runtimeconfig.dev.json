@@ -1,0 +1,8 @@
+{
+  "runtimeOptions": {
+    "additionalProbingPaths": [
+      "C:\\Users\\Sourish\\.dotnet\\store\\|arch|\\|tfm|",
+      "C:\\Users\\Sourish\\.nuget\\packages"
+    ]
+  }
+}
