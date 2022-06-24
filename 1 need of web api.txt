@@ -1163,12 +1163,135 @@ Transient Service DI:-----------------------------------------------------------
 
 
 
+TryAddSingleton, TryAddScoped and TryAddTransient methods in DI:---------------------------------------------------
+
+If we Register the dependency by using AddScoped,AddSingleton,AddTransient method then they will replace the service
+in the collection if it is already registered in the container.
+
+IEmployeeRepository.cs:
+using My_API_Project.Models;
+using System.Collections.Generic;
+
+namespace My_API_Project.Repository
+{
+    public interface IEmployeeRepository
+    {
+        public string GetName();
+    }
+}
+
+
+EmployeeRepository.cs:
+using System.Collections.Generic;
+using My_API_Project.Models;
+
+namespace My_API_Project.Repository
+{
+    public class EmployeeRepository : IEmployeeRepository
+    {
+        public string GetName()
+        {
+            return "Name from Employee Repository";
+        }
+    }
+}
+
+TestRepository.cs:
+using System.Collections.Generic;
+using My_API_Project.Models;
+
+namespace My_API_Project.Repository
+{
+    public class TestRepository : IEmployeeRepository
+    {
+        public string GetName()
+        {
+            return "Name from Test Repository";
+        }
+    }
+}
+
+EmployeeController.cs:
+using Microsoft.AspNetCore.Mvc;
+using My_API_Project.Models;
+using My_API_Project.Repository;
+using System.Collections.Generic;
+
+namespace My_API_Project.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class EmployeeController : ControllerBase
+    {
+        private readonly IEmployeeRepository _employeeRepository;
+
+        public EmployeeController(IEmployeeRepository employeeRepository)
+        {
+            _employeeRepository = employeeRepository;
+        }
+
+        [HttpGet]
+        public IActionResult GetName()
+        {
+            return Ok(_employeeRepository.GetName());
+        }
+    }
+}
 
 
 
+StartUp.cs:
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddControllers();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My_API_Project", Version = "v1" });
+            });
+
+            // when more than one Repository implement the same IRepository
+            //services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            //services.AddScoped<IEmployeeRepository, TestRepository>(); // 2nd declaration will override the 1st one
+
+            // by using TryAddScoped we will not take similar registrations after the first registration
+            services.TryAddScoped<IEmployeeRepository, EmployeeRepository>();
+            services.TryAddScoped<IEmployeeRepository, TestRepository>(); // 2nd registration will be skipped
+        }
 
 
 
+Resolve the Service dependency directly in the Action Method:--------------------------------------------------------------------
+
+Taking a new controller and using DI directy a action method.
+
+Take reference to the prev code for rest of the code:--
+
+BooksController.cs:
+using Microsoft.AspNetCore.Mvc;
+using My_API_Project.Repository;
+
+namespace My_API_Project.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class BooksController : ControllerBase
+    {
+        [HttpGet]
+        [Route("{id:int:min(10):max(100)}")]
+        public string GetById(int id)
+        {
+            return "Hello int " + id;
+        }
+
+
+        // using DI in a particular action method 
+        [HttpGet]
+        public IActionResult GetName([FromServices]IEmployeeRepository _employeeRepository)
+        {
+            return Ok(_employeeRepository.GetName());
+        }
+    }
+}
 
 
 

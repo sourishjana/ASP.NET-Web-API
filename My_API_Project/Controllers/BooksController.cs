@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using My_API_Project.Repository;
 
 namespace My_API_Project.Controllers
 {
@@ -18,6 +19,14 @@ namespace My_API_Project.Controllers
         public string GetByIdString(string idStr)
         {
             return "Hello string " + idStr;
+        }
+
+
+        // using DI in a particular action method 
+        [HttpGet]
+        public IActionResult GetName([FromServices]IEmployeeRepository _employeeRepository)
+        {
+            return Ok(_employeeRepository.GetName());
         }
     }
 }

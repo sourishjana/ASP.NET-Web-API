@@ -16,5 +16,10 @@ namespace My_API_Project.Repository
         {
             return employees;
         }
+
+        public string GetName()
+        {
+            return "Name from Employee Repository";
+        }
     }
 }

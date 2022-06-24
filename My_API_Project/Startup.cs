@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
@@ -41,7 +42,18 @@ namespace My_API_Project
             //services.AddSingleton<IEmployeeRepository, EmployeeRepository>();
 
             // Scoped service DI:-------------------------
-            services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            //services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+
+
+            // when more than one Repository implement the same IRepository
+            //services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            //services.AddScoped<IEmployeeRepository, TestRepository>(); // 2nd declaration will override the 1st one
+
+
+            // by using TryAddScoped we will not take similar registrations after the first registration
+            services.TryAddScoped<IEmployeeRepository, EmployeeRepository>();
+            services.TryAddScoped<IEmployeeRepository, TestRepository>(); // 2nd registration will be skipped
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

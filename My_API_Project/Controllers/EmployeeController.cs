@@ -122,5 +122,11 @@ namespace My_API_Project.Controllers
             var employees = _employeeRepository.GetAllEMployees();
             return Ok(employees);
         }
+
+        [HttpGet]
+        public IActionResult GetName()
+        {
+            return Ok(_employeeRepository.GetName());
+        }
     }
 }

@@ -7,5 +7,7 @@ namespace My_API_Project.Repository
     {
         int AddEmployee(Employee employee);
         IList<Employee> GetAllEMployees();
+
+        public string GetName();
     }
 }
