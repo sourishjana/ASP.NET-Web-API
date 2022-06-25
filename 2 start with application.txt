@@ -1,0 +1,121 @@
+
+
+First create a project with 
+ -> ASP.NET core web api
+
+for DB connection we need to install an ORM called Entity framework
+We need to install few packages:
+
+Microsoft.EntityFrameworkCore
+Microsoft.EntityFrameworkCore.Relational -> if we want to work with relational db
+Microsoft.EntityFrameworkCore.SqlServer  -> if we want to work with sql server db
+Microsoft.EntityFrameworkCore.Tools 	 -> in order to communicate with db and run certain commands
+Microsoft.EntityFrameworkCore.Design 	 -> it is used to make migrations
+
+Set up dbContext:
+
+Create a data folder and inside that we need to create the Models and the DBContext class.
+
+After that add the connection string in the services in the Program.cs file
+
+Also add the connection string in the appsettings.Development.json
+
+
+Then run commands:
+
+> add-migration Inital_Migration
+> update-database
+
+
+
+Now we can start creating APIs:--------------
+
+Whenever we are dealing with DB always use async APIs
+
+
+Create DTOs:----------
+
+
+HTTPPATCH: Create API to partially update an item:-----
+
+patch vs put:
+put is used to update all the rows of the table
+patch is used to update only some properties in a table
+
+To work with Http Patch we need 2 packages:
+
+Microsoft.AspNetCore.JsonPatch
+Microsoft.AspNetCore.Mvc.NewtonsoftJson
+
+The form body of patch will be like:
+
+[
+  {
+    "path": "title", // the prop we want to update
+    "op": "replace", // operation we want to perform
+    "value": "updated title" // the new value
+  }
+]
+
+for more than one prop updation:
+
+[
+  {
+    "path": "title",
+    "op": "replace",
+    "value": "updated title"
+  },
+  {
+    "path": "description",
+    "op": "replace",
+    "value": "updated desc"
+  }
+]
+
+For removing data from a prop:
+
+[
+  {
+    "path": "title",
+    "op": "remove"
+  }
+]
+
+Adding validation :
+
+Just add dataannotations in the Models. No need to add migrations for this
+Just add data annotations and save changes and run the program
+
+
+Using Automapper:----------------------------------------------------------------
+
+Install this packages:
+
+AutoMapper
+AutoMapper.Extensions.Microsoft.DependencyInjection
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
