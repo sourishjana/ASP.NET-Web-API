@@ -1,0 +1,30 @@
+<div>
+  <form [formGroup]="book" #f="ngForm" (ngSubmit)="book?.valid && onSubmit(f)">
+    <div class="alert alert-danger" *ngIf="!book?.valid && f?.submitted">
+        There are some problems with feilds
+    </div>
+
+    <div class="mb-3">
+      <label for="title" class="form-label">Title</label>
+      <input
+        type="text"
+        class="form-control"
+        id="title"
+        formControlName="title"
+      />
+    </div>
+    <div *ngIf="!title?.valid && title?.touched" class="alert alert-danger">
+        <div *ngIf="title?.errors?.['required']">Title feild is required.</div>
+    </div>
+    <div class="mb-3">
+      <label for="description" class="form-label">Description</label>
+      <textarea
+        class="form-control"
+        id="description"
+        rows="2"
+        formControlName="description"
+      ></textarea>
+    </div>
+    <button class="btn btn-primary" type="submit">Submit</button>
+  </form>
+</div>

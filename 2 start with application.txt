@@ -95,6 +95,14 @@ AutoMapper
 AutoMapper.Extensions.Microsoft.DependencyInjection
 
 
+Identity Core:---------------------
+
+Identity core is an open source framework and supported by microsoft
+It has everything that is required to work with the authentication and athorization including:
+1) signup, login, change password, forgot password
+2) multifactor authentication
+3) Login with third party app like google,fb,microsoft
+
 
 
 
