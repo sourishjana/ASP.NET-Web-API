@@ -1,10 +1,10 @@
 <div class="d-flex justify-content-center">
   <div class="col-8">
-    <form [formGroup]="book" #f="ngForm" (ngSubmit)="book?.valid && onSubmit(f)">
-      <div class="alert alert-danger" *ngIf="!book?.valid && f?.submitted">
-          There are some problems with feilds
+    <form [formGroup]="bookEdit" #f="ngForm">
+      <div class="alert alert-danger" *ngIf="!bookEdit?.valid && f?.submitted">
+        There are some problems with feilds
       </div>
-  
+
       <div class="mb-3">
         <label for="title" class="form-label">Title</label>
         <input
@@ -15,7 +15,7 @@
         />
       </div>
       <div *ngIf="!title?.valid && title?.touched" class="alert alert-danger">
-          <div *ngIf="title?.errors?.['required']">Title feild is required.</div>
+        <div *ngIf="title?.errors?.['required']">Title feild is required.</div>
       </div>
       <div class="mb-3">
         <label for="description" class="form-label">Description</label>
@@ -26,8 +26,18 @@
           formControlName="description"
         ></textarea>
       </div>
-      <button class="btn btn-primary m-2" type="submit">Submit</button>
+      <button
+        class="btn btn-primary m-2"
+        type="submit"
+        (click)="bookEdit?.valid && onSubmit(f)"
+      >
+        Submit
+      </button>
       <button class="btn btn-warning m-2" type="reset">Reset</button>
+      <button class="btn btn-danger m-2" (click)="onDelete(book.id)">
+        Delete
+      </button>
     </form>
+    
   </div>
 </div>

@@ -8,13 +8,15 @@ import { AllBooksComponent } from './all-books/all-books.component';
 import { AddBookComponent } from './add-book/add-book.component'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NavComponent } from './nav/nav.component';
+import { BookComponent } from './book/book.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     AllBooksComponent,
     AddBookComponent,
-    NavComponent
+    NavComponent,
+    BookComponent
   ],
   imports: [
     BrowserModule,
