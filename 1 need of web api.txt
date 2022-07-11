@@ -8,13 +8,13 @@ abstraction
 security
 
 
+API: (Application Programing Interface)
+API is some kind of interface which has a set of functions that allow programmers to access 
+specific features or data of an application
+
 What is web api?
+Web API as the name suggests, is an API over the web which can be accessed using HTTP protocol. 
 
-API stands for application programming interface
-web api is a concept not a technology that works on HTTP protocol and it is used to extend
-the functionality of an application.
-
-If we want to expose our services publicly for everyone we can use web api
 
 In .net application we have 2 frameowrks to create the web api
 1) asp.net web api 2 (using .net framework)
@@ -22,6 +22,13 @@ In .net application we have 2 frameowrks to create the web api
 
 
 What is REST?
+REST is a set of architectural constraints, not a protocol or a standard. 
+an architectural style for providing standards between computer systems on the web, making it easier for 
+systems to communicate with each other.
+
+This information, or representation, is delivered in one of several formats via HTTP: 
+JSON (Javascript Object Notation), HTML, XLT
+
 
 Representational state transfer
 REST is a combination of couple of principles that must be followed by the web api

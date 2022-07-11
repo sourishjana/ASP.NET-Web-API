@@ -103,6 +103,13 @@ It has everything that is required to work with the authentication and athorizat
 2) multifactor authentication
 3) Login with third party app like google,fb,microsoft
 
+Packages for Identity:
+
+Microsoft.AspNetCore.Identity
+Microsoft.AspNetCore.Identity.EntityFrameworkCore
+Microsoft.IdentityModel.Tokens
+System.IdentityModel.Tokens.Jwt
+
 
 
 

@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { Route, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { BookService } from '../book.service';
-import { Book } from '../models/book.model';
+import { forbiddenSpecialCharValidator } from '../restrict-special.directive';
 
 @Component({
   selector: 'app-add-book',
@@ -10,14 +10,15 @@ import { Book } from '../models/book.model';
   styleUrls: ['./add-book.component.scss']
 })
 export class AddBookComponent implements OnInit {
+  val:boolean=false
 
   constructor(private service:BookService,private fb:FormBuilder,private routeLink:Router) { }
 
   ngOnInit(): void {
   }
 
-  book=this.fb.group({
-    title:['',Validators.required],
+  book=this.fb.group({ // Validators.pattern("/[/-]/g")
+    title:['',[Validators.required,forbiddenSpecialCharValidator(/[/-]/)]],
     description:['']
   })
 
@@ -30,6 +31,13 @@ export class AddBookComponent implements OnInit {
       this.routeLink.navigateByUrl('/')
     },err=>{
       console.log(err)
+    })
+  }
+
+  func(){
+    this.val=true
+    this.book.patchValue({
+      title:this.title?.value.toUpperCase()
     })
   }
 
